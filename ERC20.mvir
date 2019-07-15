@@ -17,22 +17,21 @@ module TokenCapability {
         // We have to hardcode the owner address here,
         // because Move IR hasn't supported a syntactic sugar for retrieving the address of
         // module publisher. (e.g. Self.get_module_publisher())
-        owner = ${TokenAddress};
+        //owner = ${TokenAddress};
         // 77 is just a magic number for representing a sender is not the owner.
-        assert(move(sender) == move(owner), 77);
+        //assert(move(sender) == move(owner), 77);
 
         t = T{};
         // Owner can get the Token capability.
         move_to_sender<T>(move(t));
-
         return;
     }
 
     // Return an immutable reference to the TokenCapability of the sender if
     // it exists. This will only succeed if the transaction sender is the owner.
-    public borrow_sender_capability(): &R#Self.T {
+    public borrow_sender_capability(): &mut R#Self.T {
         let sender: address;
-        let t_ref: &R#Self.T;
+        let t_ref: &mut R#Self.T;
 
         sender = get_txn_sender();
         t_ref = borrow_global<T>(move(sender));
@@ -42,7 +41,6 @@ module TokenCapability {
 }
 
 module Token {
-
 
     import Transaction.TokenCapability;
 
@@ -63,13 +61,16 @@ module Token {
 
     // Publish an initial 0 balance Token for the sender
     public publish() {
-        move_to_sender<T>(Self.zero());
+        let t: R#Self.T;
+        t = Self.zero();
+        move_to_sender<T>(move(t));
+        return;
     }
 
     // `mint_to_address` will only be called by the owner.
     // This mints a new Token worth `amount` to the payee.
     public mint_to_address(payee: address, amount: u64) {
-        let capability_ref: &R#TokenCapability.T;
+        let capability_ref: &mut R#TokenCapability.T;
         let mint_token: R#Self.T;
 
         // Mint the coin
@@ -82,51 +83,48 @@ module Token {
     }
 
     // Mint a new Token worth `value`.
-    mint(value: u64, capability: &R#TokenCapability.T): R#Self.T {
+    mint(value: u64, capability: &mut R#TokenCapability.T): R#Self.T {
         release(move(capability));
         return T{value: move(value)};
-    }
-
-    // Return the Token balance of the transaction sender.
-    public balance(): u64 {
-        return move(Self.balanceOf(get_txn_sender()));
     }
 
     // Return the Token balance of `account`.
     public balanceOf(account: address): u64 {
         let token_ref: &mut R#Self.T;
+        let token_const_ref: &R#Self.T;
+        let token_val: u64;
         token_ref = borrow_global<T>(move(account));
+        token_const_ref = freeze(move(token_ref));
+        token_val = Self.value(move(token_const_ref));
+        return move(token_val);
+    }
 
-        return move(Self.value(token_ref));
+    // Return the Token balance of the transaction sender.
+    public balance(): u64 {
+        let sender: address;
+        let balance_val: u64;
+        sender = get_txn_sender();
+        balance_val = Self.balanceOf(move(sender));
+        return move(balance_val);
     }
 
     // Deposits the `to_deposit` token into the `payee`'s account
     public deposit(payee: address, to_deposit: R#Self.T) {
         let deposit_value: u64;
         let payee_token_ref: &mut R#Self.T;
+        let payee_token_const_ref: &R#Self.T;
         let payee_token_value: u64;
 
         // Check that the `to_deposit` token is non-zero
-        deposit_value = Self.value(&to_deposit);
+        T{ value: deposit_value } = move(to_deposit);
         assert(copy(deposit_value) > 0, 7);
 
         payee_token_ref = borrow_global<T>(move(payee));
-        payee_token_value = Self.value(payee_token_ref);
+        payee_token_const_ref = freeze(copy(payee_token_ref));
+        payee_token_value = Self.value(move(payee_token_const_ref));
 
         *(&mut move(payee_token_ref).value) = move(payee_token_value) + move(deposit_value);
         return;
-    }
-
-    public withdraw_from_sender(amount: u64): R#Self.T {
-        let sender: address;
-        let to_withdraw: R#Self.T;
-
-        sender = get_txn_sender();
-        to_withdraw = borrow_global<T>(move(sender));
-
-        // Withdraw the token from the sender.
-        to_withdraw = Self.withdraw(move(to_withdraw), move(amount));
-        return move(to_withdraw);
     }
 
     public withdraw(to_withdraw: &mut R#Self.T, amount: u64): R#Self.T {
@@ -141,11 +139,17 @@ module Token {
 
     // Transfer the token from the sender to the payee.
     public transfer(payee: address, amount: u64) {
-         let sender_token_ref: R#Self.T;
+        let to_pay: &mut R#Self.T;
+        let sender: address;
+        let to_withdraw: R#Self.T;
 
-         sender_token_ref = Self.withdraw_from_sender(move(amount));
-         Self.deposit(move(payee), move(sender_token_ref));
-         return;
+        sender = get_txn_sender();
+        to_pay = borrow_global<T>(move(sender));
+
+        // Withdraw the token from the sender.
+        to_withdraw = Self.withdraw(move(to_pay), move(amount));
+        Self.deposit(move(payee), move(to_withdraw));
+        return;
     }
 }
 
@@ -157,6 +161,8 @@ import Transaction.Token;
 main() {
     let sender: address;
     let capability: &R#TokenCapability.T;
+    let balance_val: u64;
+    let sender_balance_val: u64;
 
     sender = get_txn_sender();
 
@@ -166,11 +172,11 @@ main() {
     // Publish an Token account
     Token.publish();
     // Mint 1314 tokens to the owner
-    Token.mint_to_address(sender, 1314);
+    Token.mint_to_address(copy(sender), 1314);
     // Check balance == 1314
-    let balance: u64;
-    balance = Token.balanceOf(sender);
-    assert(balance == 1314, 2);
-    assert(Token.balance() == balance, 1);
+    balance_val = Token.balanceOf(copy(sender));
+    assert(copy(balance_val) == 1314, 2);
+    sender_balance_val = Token.balance();
+    assert(move(sender_balance_val) == move(balance_val), 1);
     return;
 }
