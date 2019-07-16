@@ -1,0 +1,12 @@
+// Mint tokens to the receiver, this function will succeed only
+// if the sender is the owner of Token.
+import ${token_address}.Token;
+main(receiver:address, amount: u64) {
+    let sender: address;
+
+    sender = get_txn_sender();
+
+    // Mint `amount` tokens to the receiver
+    Token.mint_to_address(copy(sender), move(amount));
+    return;
+}

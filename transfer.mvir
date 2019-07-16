@@ -1,0 +1,7 @@
+// Transfer `amount` tokens from the sender to the receiver
+import ${token_address}.Token;
+
+main(receiver: address, amount: u64) {
+    Token.transfer(move(receiver), move(amount));
+    return;
+}
