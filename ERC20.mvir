@@ -17,7 +17,7 @@ module TokenCapability {
         // We have to hardcode the owner address here,
         // because Move IR hasn't supported a syntactic sugar for retrieving the address of
         // module publisher. (e.g. Self.get_module_publisher())
-        //owner = ${TokenAddress};
+        //owner = ${token_address}; // Relace ${token_address} with your module address
         // 77 is just a magic number for representing a sender is not the owner.
         //assert(move(sender) == move(owner), 77);
 
