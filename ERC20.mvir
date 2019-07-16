@@ -160,9 +160,8 @@ import Transaction.Token;
 
 main() {
     let sender: address;
-    let capability: &R#TokenCapability.T;
     let balance_val: u64;
-    let sender_balance_val: u64;
+    let sender_balance: u64;
 
     sender = get_txn_sender();
 
@@ -176,7 +175,7 @@ main() {
     // Check balance == 1314
     balance_val = Token.balanceOf(copy(sender));
     assert(copy(balance_val) == 1314, 2);
-    sender_balance_val = Token.balance();
-    assert(move(sender_balance_val) == move(balance_val), 1);
+    sender_balance = Token.balance();
+    assert(move(sender_balance) == move(balance_val), 1);
     return;
 }
