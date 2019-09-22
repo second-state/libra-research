@@ -1,6 +1,6 @@
 // Mint tokens to the receiver, this function will succeed only
 // if the sender is the owner of Token.
-import ${token_address}.Token;
+import {{sender}}.Token;
 main(receiver:address, amount: u64) {
     let sender: address;
 

@@ -2,7 +2,7 @@
 // Because Move doesn't support `move_to` function,
 // users should use their account to publish the Token
 // resource first.
-import ${token_address}.Token;
+import {{sender}}.Token;
 main() {
     Token.publish();
     return;

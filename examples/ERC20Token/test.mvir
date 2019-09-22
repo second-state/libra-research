@@ -1,0 +1,21 @@
+import {{sender}}.Token;
+
+main() {
+    let sender: address;
+    let balance_val: u64;
+    let sender_balance: u64;
+
+    sender = get_txn_sender();
+
+    // Grant owner's capability
+    Token.grant();
+
+    // Mint 1314 tokens to the owner
+    Token.mint_to_address(copy(sender), 1314);
+    // Check balance == 1314
+    balance_val = Token.balanceOf(copy(sender));
+    assert(copy(balance_val) == 1314, 2);
+    sender_balance = Token.balance();
+    assert(move(sender_balance) == move(balance_val), 1);
+    return;
+}
