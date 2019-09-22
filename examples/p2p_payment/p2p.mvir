@@ -1,0 +1,14 @@
+import 0x0.LibraAccount;
+import 0x0.LibraCoin;
+
+main() {
+  let coin: LibraCoin.T;
+  let amount: u64;
+
+  amount = 100;
+  coin = LibraAccount.withdraw_from_sender(move(amount));
+  LibraAccount.deposit(get_txn_sender(), move(coin));
+  return;
+}
+
+

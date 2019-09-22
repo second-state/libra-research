@@ -1,0 +1,8 @@
+// Import section
+import 0x0.LibraAccount;
+
+main(/* Arguments */) {
+	// Do something here
+}
+
+

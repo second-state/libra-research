@@ -1,0 +1,7 @@
+let int: u64;
+let addr: address;
+let int_ref: &u64;
+let int_mut_ref: &mut u64;
+
+
+

@@ -1,0 +1,11 @@
+// Import section. You can import any deployed module.
+import 0x0.LibraCoin;
+
+// Module block
+module MyModule {
+  // An resource type
+  resource T {};
+  public myfunction(input: u64): bool {}
+}
+
+
