@@ -1,0 +1,13 @@
+import 0x0.LibraAccount;
+import 0x0.LibraCoin;
+import 0x1aaa5f2abee846a747a0ee71a62ea23c1ef3c0736dd5b1e0dee0796a53cb3116.MyModule;
+
+main(amount: u64) {
+  let coin: LibraCoin.T;
+  let addr: address;
+  addr = 0x1aaa5f2abee846a747a0ee71a62ea23c1ef3c0736dd5b1e0dee0796a53cb3116;
+  coin = LibraAccount.withdraw_from_sender(move(amount));
+  //calls the id procedure defined in our custom module
+  LibraAccount.deposit(move(addr), MyModule.id(move(coin)));
+  return;
+}
